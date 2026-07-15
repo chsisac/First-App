@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLB Win Predictor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚾ MLB Win Predictor</h1>
+            <p>Predict MLB game outcomes based on team statistics</p>
+        </header>
+
+        <div class="prediction-section">
+            <div class="team-selectors">
+                <div class="selector-group">
+                    <label for="homeTeam">Home Team:</label>
+                    <select id="homeTeam">
+                        <option value="">Select Home Team</option>
+                    </select>
+                </div>
+
+                <div class="selector-group">
+                    <label for="awayTeam">Away Team:</label>
+                    <select id="awayTeam">
+                        <option value="">Select Away Team</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="predictBtn" class="predict-btn">Predict</button>
+        </div>
+
+        <div id="resultContainer" class="result-container" style="display: none;">
+            <div class="arc-container">
+                <svg id="arcChart" width="400" height="300" viewBox="0 0 400 300"></svg>
+            </div>
+
+            <div class="stats-container">
+                <div class="team-stats">
+                    <h3 id="homeTeamName">Home Team</h3>
+                    <div class="stats-list">
+                        <div class="stat"><span>Wins:</span> <span id="homeWins">-</span></div>
+                        <div class="stat"><span>Losses:</span> <span id="homeLosses">-</span></div>
+                        <div class="stat"><span>Win %:</span> <span id="homeWinPct">-</span></div>
+                        <div class="stat"><span>Runs/Game:</span> <span id="homeRuns">-</span></div>
+                        <div class="stat"><span>ERA:</span> <span id="homeERA">-</span></div>
+                        <div class="stat"><span>Streak:</span> <span id="homeStreak">-</span></div>
+                    </div>
+                </div>
+
+                <div class="team-stats">
+                    <h3 id="awayTeamName">Away Team</h3>
+                    <div class="stats-list">
+                        <div class="stat"><span>Wins:</span> <span id="awayWins">-</span></div>
+                        <div class="stat"><span>Losses:</span> <span id="awayLosses">-</span></div>
+                        <div class="stat"><span>Win %:</span> <span id="awayWinPct">-</span></div>
+                        <div class="stat"><span>Runs/Game:</span> <span id="awayRuns">-</span></div>
+                        <div class="stat"><span>ERA:</span> <span id="awayERA">-</span></div>
+                        <div class="stat"><span>Streak:</span> <span id="awayStreak">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

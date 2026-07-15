@@ -36,98 +36,144 @@ function calculateWinProbability(homeStrength, awayStrength) {
     return (homeStrength / totalStrength) * 100;
 }
 
-// Draw SVG arc chart
+// Draw ESPN-style probability arc
 function drawArcChart(homeWinPct, awayWinPct, homeTeamName, awayTeamName) {
     const svg = document.getElementById('arcChart');
     svg.innerHTML = ''; // Clear previous chart
 
-    const width = 400;
-    const height = 300;
+    const width = 500;
+    const height = 250;
     const centerX = width / 2;
-    const centerY = height / 1.5;
-    const radius = 80;
-    const arcWidth = 20;
+    const centerY = height - 40;
+    const radius = 100;
+    const arcWidth = 25;
 
-    // Background circle
-    const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    bgCircle.setAttribute('cx', centerX);
-    bgCircle.setAttribute('cy', centerY);
-    bgCircle.setAttribute('r', radius);
-    bgCircle.setAttribute('fill', 'none');
-    bgCircle.setAttribute('stroke', '#e0e0e0');
-    bgCircle.setAttribute('stroke-width', arcWidth);
-    svg.appendChild(bgCircle);
+    // Background track (full arc)
+    const bgPath = createArcPath(centerX, centerY, radius, 180, 0);
+    const bgArc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    bgArc.setAttribute('d', bgPath);
+    bgArc.setAttribute('fill', 'none');
+    bgArc.setAttribute('stroke', '#e8e8e8');
+    bgArc.setAttribute('stroke-width', arcWidth);
+    bgArc.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(bgArc);
 
-    // Home team arc (left side)
-    const homeAngle = (homeWinPct / 100) * 180;
-    const homeStart = 180;
-    const homeEnd = homeStart - homeAngle;
-    const homeArc = createArc(centerX, centerY, radius, homeStart, homeEnd);
-    const homeArcPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    homeArcPath.setAttribute('d', homeArc);
-    homeArcPath.setAttribute('fill', 'none');
-    homeArcPath.setAttribute('stroke', '#667eea');
-    homeArcPath.setAttribute('stroke-width', arcWidth);
-    homeArcPath.setAttribute('stroke-linecap', 'round');
-    svg.appendChild(homeArcPath);
+    // Home team arc (left side - blue)
+    const homeAngle = 180 - (homeWinPct / 100) * 180;
+    const homeArcPath = createArcPath(centerX, centerY, radius, 180, homeAngle);
+    const homeArc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    homeArc.setAttribute('d', homeArcPath);
+    homeArc.setAttribute('fill', 'none');
+    homeArc.setAttribute('stroke', '#667eea');
+    homeArc.setAttribute('stroke-width', arcWidth);
+    homeArc.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(homeArc);
 
-    // Away team arc (right side)
-    const awayStart = 0;
-    const awayEnd = (awayWinPct / 100) * 180;
-    const awayArc = createArc(centerX, centerY, radius, awayStart, awayEnd);
-    const awayArcPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    awayArcPath.setAttribute('d', awayArc);
-    awayArcPath.setAttribute('fill', 'none');
-    awayArcPath.setAttribute('stroke', '#764ba2');
-    awayArcPath.setAttribute('stroke-width', arcWidth);
-    awayArcPath.setAttribute('stroke-linecap', 'round');
-    svg.appendChild(awayArcPath);
+    // Away team arc (right side - purple)
+    const awayAngle = awayWinPct / 100 * 180;
+    const awayArcPath = createArcPath(centerX, centerY, radius, 0, awayAngle);
+    const awayArc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    awayArc.setAttribute('d', awayArcPath);
+    awayArc.setAttribute('fill', 'none');
+    awayArc.setAttribute('stroke', '#764ba2');
+    awayArc.setAttribute('stroke-width', arcWidth);
+    awayArc.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(awayArc);
 
-    // Add percentage text
+    // Center needle/indicator
+    const needleAngle = 180 - (homeWinPct / 100) * 180;
+    const needlePos = polarToCartesian(centerX, centerY, radius, needleAngle);
+    const needle = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    needle.setAttribute('x1', centerX);
+    needle.setAttribute('y1', centerY);
+    needle.setAttribute('x2', needlePos.x);
+    needle.setAttribute('y2', needlePos.y);
+    needle.setAttribute('stroke', '#333');
+    needle.setAttribute('stroke-width', '3');
+    needle.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(needle);
+
+    // Center circle
+    const centerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    centerCircle.setAttribute('cx', centerX);
+    centerCircle.setAttribute('cy', centerY);
+    centerCircle.setAttribute('r', '8');
+    centerCircle.setAttribute('fill', '#333');
+    svg.appendChild(centerCircle);
+
+    // Percentage labels
     const homeText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    homeText.setAttribute('x', centerX - 50);
-    homeText.setAttribute('y', centerY - 30);
-    homeText.setAttribute('font-size', '18');
-    homeText.setAttribute('font-weight', '600');
+    homeText.setAttribute('x', centerX - 90);
+    homeText.setAttribute('y', centerY - 80);
+    homeText.setAttribute('font-size', '24');
+    homeText.setAttribute('font-weight', 'bold');
     homeText.setAttribute('fill', '#667eea');
     homeText.setAttribute('text-anchor', 'middle');
     homeText.textContent = homeWinPct.toFixed(1) + '%';
     svg.appendChild(homeText);
 
     const awayText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    awayText.setAttribute('x', centerX + 50);
-    awayText.setAttribute('y', centerY - 30);
-    awayText.setAttribute('font-size', '18');
-    awayText.setAttribute('font-weight', '600');
+    awayText.setAttribute('x', centerX + 90);
+    awayText.setAttribute('y', centerY - 80);
+    awayText.setAttribute('font-size', '24');
+    awayText.setAttribute('font-weight', 'bold');
     awayText.setAttribute('fill', '#764ba2');
     awayText.setAttribute('text-anchor', 'middle');
     awayText.textContent = awayWinPct.toFixed(1) + '%';
     svg.appendChild(awayText);
 
-    // Add team labels
+    // Team labels below percentages
     const homeLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    homeLabel.setAttribute('x', centerX - 50);
-    homeLabel.setAttribute('y', centerY + 40);
-    homeLabel.setAttribute('font-size', '14');
-    homeLabel.setAttribute('fill', '#667eea');
+    homeLabel.setAttribute('x', centerX - 90);
+    homeLabel.setAttribute('y', centerY - 55);
+    homeLabel.setAttribute('font-size', '12');
+    homeLabel.setAttribute('fill', '#666');
     homeLabel.setAttribute('text-anchor', 'middle');
-    homeLabel.setAttribute('font-weight', '600');
     homeLabel.textContent = homeTeamName;
     svg.appendChild(homeLabel);
 
     const awayLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    awayLabel.setAttribute('x', centerX + 50);
-    awayLabel.setAttribute('y', centerY + 40);
-    awayLabel.setAttribute('font-size', '14');
-    awayLabel.setAttribute('fill', '#764ba2');
+    awayLabel.setAttribute('x', centerX + 90);
+    awayLabel.setAttribute('y', centerY - 55);
+    awayLabel.setAttribute('font-size', '12');
+    awayLabel.setAttribute('fill', '#666');
     awayLabel.setAttribute('text-anchor', 'middle');
-    awayLabel.setAttribute('font-weight', '600');
     awayLabel.textContent = awayTeamName;
     svg.appendChild(awayLabel);
+
+    // Tick marks on the arc
+    for (let i = 0; i <= 10; i++) {
+        const angle = 180 - (i / 10) * 180;
+        const innerPos = polarToCartesian(centerX, centerY, radius - 15, angle);
+        const outerPos = polarToCartesian(centerX, centerY, radius + 15, angle);
+        
+        const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        tick.setAttribute('x1', innerPos.x);
+        tick.setAttribute('y1', innerPos.y);
+        tick.setAttribute('x2', outerPos.x);
+        tick.setAttribute('y2', outerPos.y);
+        tick.setAttribute('stroke', '#999');
+        tick.setAttribute('stroke-width', '1');
+        svg.appendChild(tick);
+
+        // Add percentage markers
+        if (i % 2 === 0) {
+            const textPos = polarToCartesian(centerX, centerY, radius + 30, angle);
+            const percentText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            percentText.setAttribute('x', textPos.x);
+            percentText.setAttribute('y', textPos.y);
+            percentText.setAttribute('font-size', '10');
+            percentText.setAttribute('fill', '#999');
+            percentText.setAttribute('text-anchor', 'middle');
+            percentText.setAttribute('dominant-baseline', 'middle');
+            percentText.textContent = (i * 10) + '%';
+            svg.appendChild(percentText);
+        }
+    }
 }
 
-// Helper function to create SVG arc
-function createArc(cx, cy, radius, startAngle, endAngle) {
+// Helper function to create SVG arc path
+function createArcPath(cx, cy, radius, startAngle, endAngle) {
     const start = polarToCartesian(cx, cy, radius, endAngle);
     const end = polarToCartesian(cx, cy, radius, startAngle);
     const largeArc = Math.abs(endAngle - startAngle) > 90 ? 1 : 0;
